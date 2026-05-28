@@ -11,6 +11,4 @@ android.permissions = INTERNET, RECORD_AUDIO
 android.api = 30
 android.minapi = 21
 android.ndk = 23b
-android.sdk = 30
 log_level = 2
-fullscreen = 0
