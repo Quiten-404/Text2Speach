@@ -1,82 +1,46 @@
-[app]
+name: Build APK
 
-# Имя приложения (как будет отображаться на телефоне)
-title = НейроГолос
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-# Уникальный идентификатор пакета (как в Google Play)
-package.name = neurovoice
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-# Домен (можно свой или оставить так)
-package.domain = org.ttsapp
-
-# Исходная папка
-source.dir = .
-
-# Какие файлы включить в APK
-source.include_exts = py,png,jpg,kv,atlas,txt
-
-# Версия приложения
-version = 1.0.0
-
-# Требования (библиотеки, которые нужно установить)
-requirements = python3,kivy,kivymd,pyjnius,android,pyttsx3
-
-# Ориентация экрана
-orientation = portrait
-
-# Разрешения Android
-android.permissions = INTERNET, RECORD_AUDIO, WRITE_EXTERNAL_STORAGE
-
-# Минимальная версия Android
-android.minapi = 21
-
-# Целевая версия Android
-android.api = 31
-
-# Версия NDK
-android.ndk = 23b
-
-# SDK версия
-android.sdk = 30
-
-# Иконка приложения (положите icon.png в папку проекта)
-android.icon = icon.png
-
-# Заставка приложения (положите presplash.jpg в папку проекта)
-android.presplash = presplash.jpg
-
-# Архитектуры (arm64-v8a для современных телефонов)
-android.archs = arm64-v8a, armeabi-v7a
-
-# Логгирование
-log_level = 2
-
-
-
-# Для работы с TTS
-android.add_src = 
-
-# Резервные строки (для русского языка)
-android.strings_en = True
-android.strings_ru = True
-
-# Поддержка русского языка в интерфейсе
-android.locale = ru
-
-# Fullscreen режим
-fullscreen = 0
-
-# Имя файла APK
-android.whitelist = 
-
-# Исключения для требований
-p4a.whitelist = 
-
-# Методы для исключения
-p4a.blacklist = 
-
-# Включить Cython
-cython.enable = 1
-
-# Включить упаковку
-p4a.allow_gradle_download = 1
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool
+          pip install buildozer cython
+      
+      - name: Setup Android SDK
+        run: |
+          # Устанавливаем Android SDK командной строки
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          unzip commandlinetools-linux-11076708_latest.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          export PATH=$PATH:~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+          # Принимаем лицензии
+          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+      
+      - name: Build APK
+        run: buildozer android debug
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Text2Speach-App
+          path: bin/*.apk
