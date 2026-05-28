@@ -27,11 +27,16 @@ jobs:
       
       - name: Accept Android SDK licenses
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-        continue-on-error: true
+          # Создаём директорию для SDK
+          mkdir -p ~/.buildozer/android/platform/android-sdk
+          # Принимаем все лицензии автоматически
+          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
       
       - name: Build APK
-        run: buildozer android debug
+        run: |
+          # Запускаем сборку с автоматическим принятием лицензий
+          yes | buildozer android debug
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
