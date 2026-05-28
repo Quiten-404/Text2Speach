@@ -10,5 +10,5 @@ orientation = portrait
 android.permissions = INTERNET, RECORD_AUDIO
 android.api = 30
 android.minapi = 21
-android.ndk = 23b
+android.ndk = 25c
 log_level = 2
