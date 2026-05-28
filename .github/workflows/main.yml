@@ -5,9 +5,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,18 +22,25 @@ jobs:
           sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool
           pip install buildozer cython
       
-      - name: Accept Android SDK licenses
+      - name: Install Android SDK manually
         run: |
-          # Создаём директорию для SDK
-          mkdir -p ~/.buildozer/android/platform/android-sdk
-          # Принимаем все лицензии автоматически
-          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+          # Скачиваем командные инструменты Android SDK
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          unzip -q commandlinetools-linux-11076708_latest.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          
+          # Добавляем в PATH
+          echo "$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          
+          # Принимаем лицензии
+          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
       
       - name: Build APK
         run: |
-          # Запускаем сборку с автоматическим принятием лицензий
-          yes | buildozer android debug
+          # Устанавливаем PATH для сборки
+          export PATH="$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin:$PATH"
+          buildozer android debug
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
