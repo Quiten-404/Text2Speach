@@ -1,0 +1,202 @@
+#:kivy 2.1.0
+#:import Platform kivy.utils.platform
+
+<MainScreen>:
+    name: 'main'
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(12)
+        
+        # Заголовок
+        MDTopAppBar:
+            title: "🎤 НейроГолос"
+            elevation: 2
+            left_action_items: [['menu', lambda x: app.open_drawer()]]
+        
+        ScrollView:
+            do_scroll_x: False
+            
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(12)
+                padding: dp(8)
+                
+                # Поле ввода текста
+                MDTextField:
+                    id: text_input
+                    hint_text: "Введите текст для озвучки..."
+                    multiline: True
+                    size_hint_y: None
+                    height: dp(150)
+                    text: root.input_text
+                    on_text: root.input_text = self.text
+                
+                # Карточка выбора голоса
+                MDCard:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(180)
+                    padding: dp(12)
+                    spacing: dp(8)
+                    
+                    MDLabel:
+                        text: "Выберите голос"
+                        font_style: "Subtitle1"
+                    
+                    MDBoxLayout:
+                        orientation: 'horizontal'
+                        spacing: dp(8)
+                        size_hint_y: None
+                        height: dp(120)
+                        
+                        # Три карточки для трех голосов
+                        VoiceCard:
+                            voice_id: "ru_female"
+                            voice_name: "Светлана"
+                            voice_desc: "Женский, теплый"
+                            selected: root.selected_voice_id == "ru_female"
+                            on_release: root.selected_voice_id = "ru_female"
+                        
+                        VoiceCard:
+                            voice_id: "ru_male"
+                            voice_name: "Дмитрий"
+                            voice_desc: "Мужской, уверенный"
+                            selected: root.selected_voice_id == "ru_male"
+                            on_release: root.selected_voice_id = "ru_male"
+                        
+                        VoiceCard:
+                            voice_id: "en_female"
+                            voice_name: "Emma"
+                            voice_desc: "English, natural"
+                            selected: root.selected_voice_id == "en_female"
+                            on_release: root.selected_voice_id = "en_female"
+                
+                # Карточка настроек
+                MDCard:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(160)
+                    padding: dp(12)
+                    spacing: dp(8)
+                    
+                    MDLabel:
+                        text: "Настройки голоса"
+                        font_style: "Subtitle1"
+                    
+                    # Скорость
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(50)
+                        MDLabel:
+                            text: "Скорость"
+                            size_hint_x: 0.3
+                        MDSlider:
+                            id: speed_slider
+                            min: 0.5
+                            max: 2.0
+                            value: root.speed
+                            on_value: root.speed = self.value
+                            hint: True
+                        MDLabel:
+                            text: f"{root.speed:.1f}"
+                            size_hint_x: 0.1
+                    
+                    # Тон
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(50)
+                        MDLabel:
+                            text: "Тон"
+                            size_hint_x: 0.3
+                        MDSlider:
+                            id: pitch_slider
+                            min: 0.5
+                            max: 2.0
+                            value: root.pitch
+                            on_value: root.pitch = self.value
+                            hint: True
+                        MDLabel:
+                            text: f"{root.pitch:.1f}"
+                            size_hint_x: 0.1
+                
+                # Кнопки управления
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(12)
+                    size_hint_y: None
+                    height: dp(50)
+                    
+                    MDRaisedButton:
+                        text: "▶ Озвучить"
+                        icon: "play"
+                        md_bg_color: app.theme_cls.primary_color
+                        on_release: root.speak()
+                        disabled: root.is_speaking
+                    
+                    MDRaisedButton:
+                        text: "⏹ Стоп"
+                        icon: "stop"
+                        md_bg_color: "#C62828"
+                        on_release: root.stop()
+                        disabled: not root.is_speaking
+                    
+                        MDRaisedButton:
+                        text: "🗑 Очистить"
+                        icon: "delete"
+                        on_release: root.clear_text()
+                
+                # Статус
+                MDLabel:
+                    text: root.status_text
+                    halign: "center"
+                    size_hint_y: None
+                    height: dp(40)
+                    theme_text_color: "Secondary"
+
+
+<VoiceCard@MDCard>:
+    """Карточка выбора голоса"""
+    voice_id: ""
+    voice_name: ""
+    voice_desc: ""
+    selected: False
+    
+    size_hint_x: 1
+    size_hint_y: None
+    height: dp(100)
+    
+    ripple_behavior: True
+    
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: dp(4)
+        
+        MDIcon:
+            icon: "account-voice"
+            halign: "center"
+            size_hint_y: 0.4
+        
+        MDLabel:
+            text: root.voice_name
+            halign: "center"
+            font_style: "Subtitle2"
+            size_hint_y: 0.3
+        
+        MDLabel:
+            text: root.voice_desc
+            halign: "center"
+            font_style: "Caption"
+            theme_text_color: "Secondary"
+            size_hint_y: 0.3
+    
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.primary_color if root.selected else (0.2, 0.2, 0.2, 0.1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(8)]
