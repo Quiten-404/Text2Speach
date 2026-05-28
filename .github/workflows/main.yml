@@ -28,33 +28,28 @@ jobs:
           sudo apt install -y git zip unzip autoconf libtool
           pip install buildozer cython
       
-      - name: Configure Android SDK
+      - name: Setup Android SDK
         run: |
-          # Создаём правильную структуру для SDK
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          
-          # Скачиваем command line tools (новая версия)
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip commandlinetools-linux-9477386_latest.zip
+          # Создаём структуру
           mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
-          mv cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
           
-          # Устанавливаем SDK
-          export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+          # Скачиваем command line tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools-linux-9477386_latest.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          
+          # ВАЖНО: Создаём символическую ссылку для Buildozer
+          ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest ~/.buildozer/android/platform/android-sdk/tools
           
           # Принимаем лицензии
-          yes | sdkmanager --licenses
+          yes | ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --licenses
           
-          # Устанавливаем нужные компоненты
-          sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+          # Устанавливаем platform-tools
+          ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
       
       - name: Build APK
-        run: |
-          export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          buildozer android debug
+        run: buildozer android debug
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
