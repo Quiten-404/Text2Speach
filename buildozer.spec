@@ -25,7 +25,7 @@ requirements = python3,kivy,kivymd,pyjnius,android,pyttsx3
 orientation = portrait
 
 # Разрешения Android
-android.permissions = INTERNET, RECORD_AUDIO
+android.permissions = INTERNET, RECORD_AUDIO, WRITE_EXTERNAL_STORAGE
 
 # Минимальная версия Android
 android.minapi = 21
