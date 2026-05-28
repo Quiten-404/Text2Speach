@@ -43,12 +43,17 @@ jobs:
       - name: Setup Android NDK 25c
         run: |
           cd ~/.buildozer/android/platform
+          rm -rf android-ndk-r23b android-ndk-r25c
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
           unzip -q android-ndk-r25c-linux.zip
           rm android-ndk-r25c-linux.zip
+          # Удаляем старый NDK, который Buildozer скачал автоматически
+          rm -rf ~/.buildozer/android/platform/android-ndk-r23b 2>/dev/null || true
       
       - name: Build APK
         run: |
+          # Явно указываем NDK
+          export ANDROIDNDK=~/.buildozer/android/platform/android-ndk-r25c
           export ANDROID_NDK_HOME=~/.buildozer/android/platform/android-ndk-r25c
           buildozer android debug
       
