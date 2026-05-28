@@ -51,8 +51,7 @@ android.archs = arm64-v8a, armeabi-v7a
 # Логгирование
 log_level = 2
 
-# Разрешить запись на SD карту
-android.permissions = WRITE_EXTERNAL_STORAGE
+
 
 # Для работы с TTS
 android.add_src = 
